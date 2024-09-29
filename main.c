@@ -332,8 +332,11 @@ typedef enum {
 
 static http_content_type parse_content_type(string8 file_name) {
 	string8_pop_and_collect_string(&file_name, '.', false);
-	string8_pop_expected_char(&file_name, '.');
-	string8 file_extension = string8_pop_and_collect_string(&file_name, 0, true);
+
+	string8 file_extension = null_string();
+	while (string8_pop_char(&file_name) == '.') {
+		file_extension = string8_pop_and_collect_string(&file_name, '.', true);
+	}
 
 	if (string8_equal_to(file_extension, string8_static("html"))) {
 		return HTTP_CONTENT_TYPE_HTML;
