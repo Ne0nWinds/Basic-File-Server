@@ -405,9 +405,15 @@ int main() {
 		void *recv_buffer = arena_push(&scratch, recv_buffer_max_size + 1);
 		int data_received = recv(new_connection, recv_buffer, recv_buffer_max_size, 0);
 
-		if (data_received == -1 || data_received == 0) {
+		if (data_received == -1) {
+			puts("Connection Closed");
 			socket_close(new_connection);
+			continue;
+		}
+
+		if (data_received == 0) {
 			puts("Invalid HTTP request");
+			socket_close(new_connection);
 			continue;
 		}
 
@@ -453,6 +459,9 @@ int main() {
 				} break;
 				case HTTP_CONTENT_TYPE_JS: {
 					content_type_value = string8_static("text/javascript; charset=UTF-8");
+				} break;
+				case HTTP_CONTENT_TYPE_CSS: {
+					content_type_value = string8_static("text/css; charset=UTF-8");
 				} break;
 				case HTTP_CONTENT_TYPE_WASM: {
 					content_type_value = string8_static("application/wasm");
