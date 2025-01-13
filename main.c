@@ -76,6 +76,7 @@ static memory_arena alloc_memory_arena_from_os(u64 size) {
 	return result;
 }
 static inline void socket_close(int socket) {
+	shutdown(socket, 2);
 	closesocket(socket);
 }
 static file_mapping open_memory_mapped_file(memory_arena *arena, string8 filepath) {
@@ -401,7 +402,7 @@ int main() {
 
 		if (new_connection == -1) break;
 
-		const u32 recv_buffer_max_size = 2047;
+		const u32 recv_buffer_max_size = 8191;
 		void *recv_buffer = arena_push(&scratch, recv_buffer_max_size + 1);
 		int data_received = recv(new_connection, recv_buffer, recv_buffer_max_size, 0);
 
@@ -412,10 +413,11 @@ int main() {
 		}
 
 		if (data_received == 0) {
-			puts("Invalid HTTP request");
+			puts("Connection Closed");
 			socket_close(new_connection);
 			continue;
 		}
+		puts((const char *)recv_buffer);
 
 		http_request request = parse_http_request((string8){ recv_buffer, data_received });
 
